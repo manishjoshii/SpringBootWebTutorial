@@ -1,6 +1,5 @@
 package com.manishjoshi.SpringBootWebTutorial.services;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.manishjoshi.SpringBootWebTutorial.dto.EmployeeDTO;
@@ -9,7 +8,6 @@ import com.manishjoshi.SpringBootWebTutorial.repositories.EmployeeRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -43,17 +41,12 @@ public class EmployeeService {
         return employeeRepository.existsById(id);
     }
 
-    public EmployeeDTO createEmployee(JsonNode body) {
-        try {
-            EmployeeEntity employeeEntity = objectMapper.treeToValue(body, EmployeeEntity.class);
-            EmployeeEntity employee = employeeRepository.save(employeeEntity);
-            return modelMapper.map(employee, EmployeeDTO.class);
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException("Failed to parse JSON input", e);
-        }
+    public EmployeeDTO createEmployee(EmployeeDTO employeeDTO) {
+        EmployeeEntity employeeEntity = modelMapper.map(employeeDTO, EmployeeEntity.class);
+        return modelMapper.map(employeeRepository.save(employeeEntity), EmployeeDTO.class);
     }
 
-    public EmployeeDTO updateEmployeeById(JsonNode body, UUID id) {
+    public EmployeeDTO updateEmployeeById(EmployeeDTO employeeDTO, UUID id) {
         // 1. Check if the record already exists in the database
         boolean isExisting = isExistsByEmployeeId(id);
 
@@ -63,26 +56,22 @@ public class EmployeeService {
         if (isExisting) {
             // If it exists, pull the current managed entity state from the DB
             employeeEntity = employeeRepository.findById(id).get();
+            // 3. Overwrite/populate the fields from your JSON body
+            modelMapper.map(employeeDTO, employeeEntity);
             // Ensure the ID stays locked to the path variable
             employeeEntity.setId(id);
         } else {
             // If it's brand new, create an entirely fresh entity instance
-            employeeEntity = new EmployeeEntity();
+            employeeEntity = modelMapper.map(
+                    employeeDTO,
+                    EmployeeEntity.class
+            );
         }
+        // 4. Save the entity
+        EmployeeEntity savedEmployee = employeeRepository.save(employeeEntity);
 
-        try {
-            // 3. Overwrite/populate the fields from your JSON body
-            objectMapper.readerForUpdating(employeeEntity).readValue(body);
-
-            // 4. Save the entity
-            EmployeeEntity savedEmployee = employeeRepository.save(employeeEntity);
-
-            // 5. Map back to DTO and return
-            return modelMapper.map(savedEmployee, EmployeeDTO.class);
-
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to update/create employee JSON input", e);
-        }
+        // 5. Map back to DTO and return
+        return modelMapper.map(savedEmployee, EmployeeDTO.class);
     }
 
     public Optional<EmployeeDTO> patchEmployeeById(JsonNode body, UUID id) {

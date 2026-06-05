@@ -3,6 +3,7 @@ package com.manishjoshi.SpringBootWebTutorial.controllers;
 import com.manishjoshi.SpringBootWebTutorial.dto.EmployeeDTO;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.manishjoshi.SpringBootWebTutorial.services.EmployeeService;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,15 +34,15 @@ public class EmployeeController {
     }
 
     @PostMapping
-    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody JsonNode body) {
-        EmployeeDTO employeeDTO = employeeService.createEmployee(body);
-        return new ResponseEntity<>(employeeDTO, HttpStatus.CREATED);
+    public ResponseEntity<EmployeeDTO> createEmployee(@RequestBody @Valid EmployeeDTO employeeDTO) {
+        EmployeeDTO result = employeeService.createEmployee(employeeDTO);
+        return new ResponseEntity<>(result, HttpStatus.CREATED);
     }
 
     @PutMapping(path = "/{id}")
-    public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody JsonNode body, @PathVariable UUID id) {
-        EmployeeDTO employeeDTO = employeeService.updateEmployeeById(body, id);
-        return ResponseEntity.ok(employeeDTO);
+    public ResponseEntity<EmployeeDTO> updateEmployeeById(@RequestBody @Valid EmployeeDTO employeeDTO, @PathVariable UUID id) {
+        EmployeeDTO result = employeeService.updateEmployeeById(employeeDTO, id);
+        return ResponseEntity.ok(result);
     }
 
     @PatchMapping(path = "/{id}")

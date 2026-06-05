@@ -30,9 +30,11 @@ public class EmployeeEntity {
     @Column(nullable = false, unique = true)
     private String email;
 
-    private int age;
+    private Integer age;
 
-    private double salary;
+    private Double salary;
+
+    private String role;
 
     @CreatedDate // <--- Automatically generates timestamp on insertion
     @Column(nullable = false, updatable = false) // <--- Prevents modifications on updates
