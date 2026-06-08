@@ -2,6 +2,7 @@ package com.manishjoshi.SpringBootWebTutorial.controllers;
 
 import com.manishjoshi.SpringBootWebTutorial.dto.EmployeeDTO;
 import com.fasterxml.jackson.databind.JsonNode;
+import com.manishjoshi.SpringBootWebTutorial.exceptions.ResourceNotFoundException;
 import com.manishjoshi.SpringBootWebTutorial.services.EmployeeService;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -25,7 +26,7 @@ public class EmployeeController {
         Optional<EmployeeDTO> employee = employeeService.getEmployeeById(id);
         return employee
                 .map(ResponseEntity::ok)   // ResponseEntity.ok(employee)
-                .orElse(ResponseEntity.notFound().build());
+                .orElseThrow(() -> new ResourceNotFoundException("Employee Not Found, ID: " + id));
     }
 
     @GetMapping

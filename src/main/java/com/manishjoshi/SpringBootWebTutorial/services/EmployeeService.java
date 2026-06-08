@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.manishjoshi.SpringBootWebTutorial.dto.EmployeeDTO;
 import com.manishjoshi.SpringBootWebTutorial.entities.EmployeeEntity;
+import com.manishjoshi.SpringBootWebTutorial.exceptions.ResourceNotFoundException;
 import com.manishjoshi.SpringBootWebTutorial.repositories.EmployeeRepository;
 import org.modelmapper.ModelMapper;
 import org.springframework.stereotype.Service;
@@ -38,7 +39,10 @@ public class EmployeeService {
     }
 
     public boolean isExistsByEmployeeId(UUID id) {
-        return employeeRepository.existsById(id);
+        if (!employeeRepository.existsById(id)) {
+            throw new ResourceNotFoundException("Employee Not Found, ID: " + id);
+        }
+        return true;
     }
 
     public EmployeeDTO createEmployee(EmployeeDTO employeeDTO) {
@@ -53,20 +57,12 @@ public class EmployeeService {
         // 2. Initialize the entity reference
         EmployeeEntity employeeEntity;
 
-        if (isExisting) {
-            // If it exists, pull the current managed entity state from the DB
-            employeeEntity = employeeRepository.findById(id).get();
-            // 3. Overwrite/populate the fields from your JSON body
-            modelMapper.map(employeeDTO, employeeEntity);
-            // Ensure the ID stays locked to the path variable
-            employeeEntity.setId(id);
-        } else {
-            // If it's brand new, create an entirely fresh entity instance
-            employeeEntity = modelMapper.map(
-                    employeeDTO,
-                    EmployeeEntity.class
-            );
-        }
+        // If it exists, pull the current managed entity state from the DB
+        employeeEntity = employeeRepository.findById(id).get();
+        // 3. Overwrite/populate the fields from your JSON body
+        modelMapper.map(employeeDTO, employeeEntity);
+        // Ensure the ID stays locked to the path variable
+        employeeEntity.setId(id);
         // 4. Save the entity
         EmployeeEntity savedEmployee = employeeRepository.save(employeeEntity);
 
@@ -75,6 +71,7 @@ public class EmployeeService {
     }
 
     public Optional<EmployeeDTO> patchEmployeeById(JsonNode body, UUID id) {
+        isExistsByEmployeeId(id);
         // 1. Find the entity or return null if it doesn't exist
         return employeeRepository.findById(id).map(employeeEntity -> {
             try {

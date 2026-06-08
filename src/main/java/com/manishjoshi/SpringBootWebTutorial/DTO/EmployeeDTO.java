@@ -2,10 +2,7 @@ package com.manishjoshi.SpringBootWebTutorial.dto;
 
 import com.manishjoshi.SpringBootWebTutorial.annotations.validations.EmployeeRoleValidation;
 import jakarta.validation.constraints.*;
-import lombok.AllArgsConstructor;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
-import lombok.Setter;
+import lombok.*;
 
 import java.time.Instant;
 import java.util.UUID;
@@ -14,6 +11,7 @@ import java.util.UUID;
 @Setter
 @AllArgsConstructor
 @NoArgsConstructor
+@ToString
 public class EmployeeDTO {
 
     private UUID id;
